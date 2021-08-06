@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianyou.mapper.UserMapper">
+<!--    开启二级缓存-->
+    <cache/>
+
+<!--    一个订单对应一个用户-->
+    <resultMap id="OrderUserResultMap" type="order">
+        <id property="id" column="id"></id>
+        <result property="createTime" column="create_time"></result>
+        <result property="note" column="note"></result>
+        <result property="userId" column="user_id"></result>
+        <result property="number" column="number"></result>
+<!--        assocition: 配置一对一的属性-->
+<!--        property: order里面的属性名-->
+<!--        javaType: 属性的类型-->
+        <association property="user" javaType="user">
+            <id property="id" column="id"></id>
+            <result property="name" column="name"/>
+            <result property="age" column="age"/>
+            <result property="description" column="description"/>
+        </association>
+
+    </resultMap>
+
+
+<!--    一个用户对应多个订单-->
+    <resultMap id="UserOrderResultMap" type="user">
+        <id property="id" column="id"/>
+        <result property="description" column="description"/>
+        <result property="name" column="name"/>
+        <result property="age" column="age"/>
+
+<!--        开始配置一对多的关系-->
+<!--        property:实体类中集合的名称-->
+<!--        javatype：集合的类型-->
+<!--        ofType：集合中存放的具体类型-->
+        <collection property="orders" javaType="list" ofType="order">
+            <id property="id" column="id"/>
+            <result property="number" column="number"/>
+            <result property="createTime" column="create_time"/>
+            <result property="note" column="node"/>
+        </collection>
+
+    </resultMap>
+
+    <select id="findAllUser" resultType="com.jianyou.pojo.User">
+        select * from user
+    </select>
+
+
+    <select id="findUserByCondition" resultType="com.jianyou.pojo.User" parameterType="userVo">
+        select * from user
+        where id>0
+        <if test="name != null">
+            and name="'"+#{name}+"'"
+        </if>
+        <if test="age != null">
+            and age=#{age}
+        </if>
+    </select>
+    <select id="findUserByChoose" resultType="com.jianyou.pojo.User" parameterType="UserVo">
+        select * from user
+        <where>
+            <choose>
+                <when test="name!=null">
+                    name like #{name}
+                </when>
+                <when test="age !=0">
+                    age > #{age}
+                </when>
+                <otherwise>
+                    age = 21
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+    <select id="findUserSecond" resultType="com.jianyou.pojo.User" parameterType="userVo">
+        select * from user
+        <where>
+        <if test="age !=0">
+           and age= #{age}
+        </if>
+        <if test="name != null">
+           and name=#{name}
+        </if>
+        </where>
+    </select>
+    <select id="findUserByIds" resultType="com.jianyou.pojo.User">
+         select * from user
+        where id in
+       <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+           #{item}
+       </foreach>
+    </select>
+
+
+</mapper>
